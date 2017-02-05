@@ -222,6 +222,8 @@ model1.compile(loss='mean_squared_error', optimizer=adam)
 # 2. We found 10240 generated images per epoch to be sufficient to train the model, many times the model in the first epoch 
 #    works flawlessly on both tracks; also using just 5120 images per epoch is sufficient for training the model to run on 
 #    the first track only. 
+# 3. We don't use the testing data set: instead we test each of the 10 produced models on two tracks and find the ones 
+#    that perform best. Note: on some occasions, the best model is produced in the first epoch (only after 1 minute of training!).
 for i in range(10):
     model_name = 'model_dark_10K_' + str(i)
     
