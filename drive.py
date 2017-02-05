@@ -42,6 +42,7 @@ def telemetry(sid, data):
     imgString = data["image"]
     image = Image.open(BytesIO(base64.b64decode(imgString)))
     image_array = np.asarray(image)
+    # The original drive.py modified to shrink the image from 320 by 160 to 80 by 40, convert ot HSV and apply normalization
     image_array = imresize(image_array, (h, w))
     image_array = cv2.cvtColor(image_array, cv2.COLOR_RGB2HSV)
     image_array = np.interp(image_array, [0, 255], [-0.5, 0.5])
@@ -50,7 +51,7 @@ def telemetry(sid, data):
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
     # The driving model currently just outputs a constant throttle. Feel free to edit this.
-    throttle = 0.27
+    throttle = 0.27 # throttle modified to be able to drive on track 2 as well
     print(steering_angle, throttle)
     send_control(steering_angle, throttle)
 

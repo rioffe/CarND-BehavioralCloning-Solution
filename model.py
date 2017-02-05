@@ -9,13 +9,21 @@ import cv2
 from platform import system
 from random import randint
 
+# The original images coming from the cameras are 320 by 160
+# We found the for the problem at hand we can easily resize the image down to 80 by 40.
+# Resizing significantly shortens the computation time
 h = 40
 w = 80
 
+# We assume that driving_log.csv is located in the current directory
+# and images from the cameras are located in IMG directory
+# If the camera data and driving_log.csv are in the data directory, adjust accordingly
 data = csv('driving_log.csv')
 nrows = data.shape[0]
 y_train = data['steering']
 
+# This routine only used during generation of validation arrays
+# Image is read, converted to HSV space, resized down to 80 by 40 and normalized.
 def read_image(path):
     im = cv2.imread(path)
     im = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
@@ -23,12 +31,17 @@ def read_image(path):
     im = np.interp(im, [0, 255], [-0.5, 0.5])
     return im
 
+# Read the image, convert to HSV space and resize down to 80 by 40 (to a quarter of a size in each direction)
 def read_image_hsv(path):
     im = cv2.imread(path)
     im = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
     im = cv2.resize(im, (0,0), fx=.25, fy=.25)
     return im
 
+# given the row number, randomly read the image from either left, center or right camera
+# for the left and right cameras adjust the steering angle 
+# return image and a corresponding steering angle
+# Steering angle adjustment based on Vivek Yadav's blog
 def random_read_image(k):
     center_path = data['center'][k]
     left_path   = data['left'][k][1:]
@@ -47,6 +60,7 @@ def random_read_image(k):
     return im, steering
 
 # from http://stackoverflow.com/questions/9170271/flipping-a-image-vertically-relation-ship-between-the-original-picture-and-the
+# Horizontal image flip
 def flip_image(im):
     flipped_im = np.ndarray((im.shape), dtype='uint8')
     flipped_im[:,:,0] = np.fliplr(im[:,:,0])
@@ -54,6 +68,7 @@ def flip_image(im):
     flipped_im[:,:,2] = np.fliplr(im[:,:,2])
     return flipped_im
 
+# Given the input image, steering pair, randomly flip the image and return the resulting image and negated steering
 def random_flip_image(pair):
     im, steering = pair
     i = randint(0, 1)
@@ -62,14 +77,20 @@ def random_flip_image(pair):
         steering = -steering
     return im, steering
 
+# Given the input image, steering pair, normalize the image and return normalized image and unchanged steering
 def interpolate_image(pair):
     im, steering = pair
     im = np.interp(im, [0, 255], [-0.5, 0.5])
     return im, steering
 
+# Given the input image, steering pair, randomly shift the image left or right to a random number of pixels
+# We adjust the steering based on a number of pixels we shifted and the direction of the shift
+# Return the adjusted image and a modified steering
+# Note 1: shift distances are set to emphasize large shifts, which help the model to learn sharper turns
+# Note 2: the number that we multiply shift distance by to obtain steering shift is based on Vivek Yadav's blog,
+# adjusted for the fact that we deal with 80 by 40 images, instead of 320 by 160 images, so constant is 4X larger.
 def random_shift_image(pair):
     im, steering = pair
-    #shift_distance = float(randint(-25, 25))
     i = randint(0,1)
     if (i == 0):
         shift_distance = float(randint(-25, -10))
@@ -82,6 +103,9 @@ def random_shift_image(pair):
     im = shift(im, [0.0, shift_distance, 0.0], mode='nearest') 
     return im, steering
 
+# Given the input image, steering pair, randomly darken the image. Return darkened image and unchanged steering.
+# Image is darkened by reducing the V channel of an HSV image. Note that the range to darken was found empirically 
+# for the model to perform best on both the first and the second track.
 def random_dark_image(pair):
     im, steering = pair
     h_, s, v = cv2.split(im)
@@ -92,6 +116,15 @@ def random_dark_image(pair):
     im = cv2.merge((h_, s, v))
     return im, steering
 
+# We generate images from the first 90% of the rows in the Udacity provided datacet.
+# We use the steering threshold to find images with steering angles larger than steering theshold, based on the Vivek Yadav's blog.
+# We perform the following pipeline to generate one image in a batch:
+# 1. Find a random row within the first 90% of the rows of the data set with a steering angle above threshold
+# 2. Randomly read image from left, center or right camera for that row
+# 3. Randomly darken the image
+# 4. Randomly flip the image (or not)
+# 5. Normalize the image
+# 6. Randomly shift the image left or right by a fairly large amount
 def random_generator(batch_size = 128, steering_threshold = 0.1):
     i = 0
     while 1:
@@ -110,6 +143,10 @@ def random_generator(batch_size = 128, steering_threshold = 0.1):
         
         yield (X_batch, y_batch)
 
+# Generation of validation arrays is a much simpler affair
+# We generate validation arrays from the last 10% rows of the data set
+# We generate images only from the center camera, read the image, scale it to 80 by 40 pixels, convert it to HSV space 
+# and normalize it. We yield a batch of normalized and scaled HSV images and the corresponding steering angles.
 def generate_validation_arrays(batch_size = 128):
     i = 0
     while 1:
@@ -127,7 +164,16 @@ def generate_validation_arrays(batch_size = 128):
             
         yield (X_batch, y_batch)
 
-
+# We use the model from the NVidia's "End to End Learning for Self-Driving Cars" paper
+# https://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf
+# The model is modified in the following ways from the orinal described in the paper:
+# 1. The input images are 80 by 40 by 3 in HSV space instead of 200 by 66 by 3 in YUV space
+# 2. The normalization is applied to images outside the model (we experimented with the Lambda layer, 
+#    but found no perfomance difference)
+# 3. The last two convolutional blocks don't have max pooling layers in them accounting for the smaller input image size.
+# 4. Instead of a more traditional RELU activation, we use ELU activation, which we found to perform much better: 
+#    note, that both open-sourced Comma.AI steering model and some blogs use ELUs as well. 
+# 5. We apply dropout only to the last of convolutional layers and the first of the fully connected layers.
 model1 = Sequential()
 
 model1.add(Convolution2D(24, 5, 5, border_mode='same', input_shape=(h, w, 3)))
@@ -164,9 +210,18 @@ model1.add(Dense(output_dim=1))
 
 print(model1.summary())
 
+# We use Adam optimizer and actually found a learning rate of 0.0001 to perform best 
+# (values of 0.1, 0.001, 0.00001 and 0.00003 were tried but found lacking)
 adam = Adam(lr=0.0001)
 model1.compile(loss='mean_squared_error', optimizer=adam)
 
+# We train for 10 epochs, gradually reducing the steering threshold, similar to Vivek Yadav's blog.
+# Couple of things to point out that are different from other solutions:
+# 1. We start with a very large steering angle threshold of 0.3 - only 148 out of 8036 center camera images
+#    meet that specification. This is consistent with the NVidia's paper suggestion to focus training on turns.
+# 2. We found 10240 generated images per epoch to be sufficient to train the model, many times the model in the first epoch 
+#    works flawlessly on both tracks; also using just 5120 images per epoch is sufficient for training the model to run on 
+#    the first track only. 
 for i in range(10):
     model_name = 'model_dark_10K_' + str(i)
     
