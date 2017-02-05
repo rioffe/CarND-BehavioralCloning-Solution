@@ -68,7 +68,7 @@ Here is a recap of the model (lines 167 throught 209):
 My model consists of five convolutional blocks. The first three convolutional blocks consist of sets of 5 by 5 convolutions (24, 36,
 and 48 deep respectively), followed by 2 by 2 max pooling followed by ELU activation. The fourth and fifth blocks are 3 by 3 convolutions followed by ELU activation (max pooling for these blocks is omitted). There are four fully connected layers of sizes 100, 50, 10 and 1, the first three of them followed by ELUs. Dropout of 0.5 is applied as described above.
 
-I decided not to use a Keral lambda layer, since in my experiments I didn't find that it improves performance, so image normalization is typically done either right after reading and scaling the image.
+I decided not to use a Keras lambda layer, since in my experiments I didn't find that it improves performance, so image normalization is typically done either right after reading and scaling the image.
 
 ####2. Attempts to reduce overfitting in the model
 
@@ -79,35 +79,43 @@ The model was trained and validated on different data sets to ensure that the mo
 ####3. Model parameter tuning
 
 The model used an adam optimizer, and actually found a learning rate of 0.0001 to perform best (model.py line 215).
-Values of 0.1, 0.001, 0.00001 and 0.00003 were tried but found lacking.
+Values of 0.1, 0.001, 0.00001 and 0.00003 were tried but found lacking. 
 
 ####4. Appropriate training data
 
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ... 
-
-For details about how I created the training data, see the next section. 
+We generate images from the first 90% of the rows in the Udacity provided data set.
+We use the steering threshold to find images with steering angles larger than steering theshold, based on the Vivek Yadav's blog.
+We perform the following pipeline to generate one image in a batch:
+* Find a random row within the first 90% of the rows of the data set with a steering angle above threshold
+* Randomly read image from left, center or right camera for that row
+* Randomly darken the image
+* Randomly flip the image (or not)
+* Normalize the image
+* Randomly shift the image left or right by a fairly large amount
 
 ###Model Architecture and Training Strategy
 
 ####1. Solution Design Approach
 
-The overall strategy for deriving a model architecture was to ...
+The overall strategy for deriving a model architecture was to adapt the architecture described in the NVidia paper to the problem at hand. 
 
-My first step was to use a convolution neural network model similar to the ... I thought this model might be appropriate because ...
+My first step was to implement the model literally with the dropout layers added after every convolutional and fully connected block. I thought this model might be appropriate because NVidia already demostrated the success of the model on a real car. I gradually realized that I need to remove some of the dropout layers, since the model didn't show any improvements.
 
-In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting. 
+At one point I got the model fully operational on the first track, but then realized that I was severely overfitting, since the error on the training set dipped below the error of the validation set. I also realized the my training and validation sets were possibly overlapping, so I had to rewrite the training and validation generators to use non-overlapping parts of the data set.
 
-To combat the overfitting, I modified the model so that ...
+My original approach to generating training data was ineffective as well, since I always included unmodified images from the center, left and right cameras in a batch. For large steering threshold, this meant always using the same images over and over again, reducing the new data the model was trained on in an epoch. I eventually realized that I have to switch to approach described in Vivek Yadav's blog, which guaranteed that there was very low probability of a model to see exactly the same image within an epoch, even if underlying data contained only 3 * 398 images (e.g. for the steering threshold of 0.3).
 
-Then I ... 
+The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track. To improve the driving behavior in these cases, I did the following: 
+* Flipped the image horizontally, which made the model handle right turns as confidently as left turns
+* Used large image shifts (10 to 25 pixels in either left or right direction, simultaneously adjusting the steering angle)
+* Used images from the left and the right cameras, simultaneously adding or subtracting to the steering value of the center image
+* Switched from RGB to YUV and then finally to HSV color space, which helps the model clearly see the boundaries of the track lanes
 
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
-
-At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
+At the end of the process, the vehicle is able to drive autonomously around both tracks without leaving the road. Note, that to enable successful runs around the second track, I had to add image darkening into my image generation pipeline, which is not necessary to reliably drive the car on the first track. Also note, that very large shifts are not strictly necessary for the good performance on the first track.
 
 ####2. Final Model Architecture
 
-The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
+The final model architecture (model.py lines 167-209) consisted of a convolution neural network with the following layers and layer sizes ...
 
 Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
 
@@ -115,7 +123,20 @@ Here is a visualization of the architecture (note: visualizing the architecture 
 
 ####3. Creation of the Training Set & Training Process
 
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
+My goal from the very beginning was to only use the Udacity dataset for training. I was able to produce a model that drove sufficiently well on the first track by using only center image, horizontal flip of the image and various symmetrical shifts of the center image. It didn't however generalize well to the second track. To account for large turns of the second track I was forced to focus on the very large shifts only, and then add left and right camera images and eventually added darkened images (though I overdid the darkening range and had to lower it to improve the model performance on the second track).
+
+To capture good driving behavior, I started focusing my training on images generated with very large steering angles (e.g. starting with steering angles greater than 0.3). Here is the summary of the dataset with respect to steering angles:
+
+* There is a total of 8036 image triples (left, center, right camera images) in the data set
+* 4361 images have 0 steering
+* The rest are split as follows: 1900 image triples with positive steering angles and 1775 images with negative steering angles
+* There are 148 center images with the absolute value of steering greater than 0.4
+* There are 250 center images with the absolute value of steering in the range (0.3, 0.4]
+* There are 461 center images with the absolute value of steering in the range (0.2, 0.3]
+* There are 1254 center images with the absolute value of steering in the range (0.1, 0.2]
+* There are 1562 center images with the absolute value of steering in the range (0.0, 0.1]
+
+Here is an example image of center lane driving:
 
 ![alt text][image2]
 
