@@ -2,7 +2,7 @@
 
 ## by Robert Ioffe
 
-###You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
+### February 5, 2017
 
 ---
 
@@ -37,8 +37,8 @@ The goals / steps of this project are the following:
 My project includes the following files:
 * model.py containing the script to create and train the model
 * drive.py for driving the car in autonomous mode
-* model.h5 containing a trained convolution neural network 
-* writeup_report.md or writeup_report.pdf summarizing the results
+* model.json, model.h5 containing a trained convolution neural network 
+* writeup_report.md summarizing the results
 
 ####2. Submssion includes functional code
 Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
@@ -52,7 +52,17 @@ The model.py file contains the code for training and saving the convolution neur
 
 ###Model Architecture and Training Strategy
 
-####1. An appropriate model arcthiecture has been employed
+####1. An appropriate model architecture has been employed
+
+I use the model from the NVidia's ["End to End Learning for Self-Driving Cars" paper] (https://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf)
+The model is modified in the following ways from the orinal described in the paper:
+1. The input images are 80 by 40 by 3 in HSV space instead of 200 by 66 by 3 in YUV space
+2. The normalization is applied to images outside the model (we experimented with the Lambda layer, 
+   but found no perfomance difference)
+3. The last two convolutional blocks don't have max pooling layers in them accounting for the smaller input image size.
+4. Instead of a more traditional RELU activation, we use ELU activation, which we found to perform much better: 
+   note, that both open-sourced Comma.AI steering model and some blogs use ELUs as well. 
+5. We apply dropout only to the last of convolutional layers and the first of the fully connected layers.
 
 My model consists of a convolution neural network with 3x3 filter sizes and depths between 32 and 128 (model.py lines 18-24) 
 
