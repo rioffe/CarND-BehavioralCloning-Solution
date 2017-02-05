@@ -54,29 +54,32 @@ The model.py file contains the code for training and saving the convolution neur
 
 ####1. An appropriate model architecture has been employed
 
-I use the model from the NVidia's ["End to End Learning for Self-Driving Cars" paper] (https://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf)
+I use the model from the NVidia's ["End to End Learning for Self-Driving Cars" paper] (https://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf).
 The model is modified in the following ways from the orinal described in the paper:
-1. The input images are 80 by 40 by 3 in HSV space instead of 200 by 66 by 3 in YUV space
-2. The normalization is applied to images outside the model (we experimented with the Lambda layer, 
+* The input images are 80 by 40 by 3 in HSV space instead of 200 by 66 by 3 in YUV space
+* The normalization is applied to images outside the model (we experimented with the Lambda layer, 
    but found no perfomance difference)
-3. The last two convolutional blocks don't have max pooling layers in them accounting for the smaller input image size.
-4. Instead of a more traditional RELU activation, we use ELU activation, which we found to perform much better: 
+* The last two convolutional blocks don't have max pooling layers in them accounting for the smaller input image size.
+* Instead of a more traditional RELU activation, we use ELU activation, which we found to perform much better: 
    note, that both open-sourced Comma.AI steering model and some blogs use ELUs as well. 
-5. We apply dropout only to the last of convolutional layers and the first of the fully connected layers.
+* We apply dropout only to the last of convolutional layers and the first of the fully connected layers.
 
-My model consists of a convolution neural network with 3x3 filter sizes and depths between 32 and 128 (model.py lines 18-24) 
+Here is a recap of the model (lines 167 throught 209):
+My model consists of five convolutional blocks. The first three convolutional blocks consist of sets of 5 by 5 convolutions (24, 36,
+and 48 deep respectively), followed by 2 by 2 max pooling followed by ELU activation. The fourth and fifth blocks are 3 by 3 convolutions followed by ELU activation (max pooling for these blocks is omitted). There are four fully connected layers of sizes 100, 50, 10 and 1, the first three of them followed by ELUs. Dropout of 0.5 is applied as described above.
 
-The model includes RELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using a Keras lambda layer (code line 18). 
+I decided not to use a Keral lambda layer, since in my experiments I didn't find that it improves performance, so image normalization is typically done either right after reading and scaling the image.
 
 ####2. Attempts to reduce overfitting in the model
 
-The model contains dropout layers in order to reduce overfitting (model.py lines 21). 
+The model contains two dropout layers in order to reduce overfitting (model.py lines 197 and 203). Adding more dropout layers proved detrimental to model performance.
 
-The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 10-16). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
+The model was trained and validated on different data sets to ensure that the model was not overfitting: the first 90% of rows of the Udacity data set was used for generating the training dataset, and the remaining 10% of rows was used for generating the validation dataset. The model was tested by running it through the simulator on both the first and the second track and ensuring that the vehicle could stay on the track (in the case of the second track, the car reaches the "Road Closed" signs without crashing).
 
 ####3. Model parameter tuning
 
-The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25).
+The model used an adam optimizer, and actually found a learning rate of 0.0001 to perform best (model.py line 215).
+Values of 0.1, 0.001, 0.00001 and 0.00003 were tried but found lacking.
 
 ####4. Appropriate training data
 
