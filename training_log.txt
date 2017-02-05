@@ -1,0 +1,92 @@
+rioffe@RIOFFE-DESK1:~/self_driving_car_class/CarND-Behavioral-Cloning$ python3 model.py 
+Using TensorFlow backend.
+I tensorflow/stream_executor/dso_loader.cc:128] successfully opened CUDA library libcublas.so locally
+I tensorflow/stream_executor/dso_loader.cc:128] successfully opened CUDA library libcudnn.so locally
+I tensorflow/stream_executor/dso_loader.cc:128] successfully opened CUDA library libcufft.so locally
+I tensorflow/stream_executor/dso_loader.cc:128] successfully opened CUDA library libcuda.so.1 locally
+I tensorflow/stream_executor/dso_loader.cc:128] successfully opened CUDA library libcurand.so locally
+____________________________________________________________________________________________________
+Layer (type)                     Output Shape          Param #     Connected to                     
+====================================================================================================
+convolution2d_1 (Convolution2D)  (None, 40, 80, 24)    1824        convolution2d_input_1[0][0]      
+____________________________________________________________________________________________________
+maxpooling2d_1 (MaxPooling2D)    (None, 20, 40, 24)    0           convolution2d_1[0][0]            
+____________________________________________________________________________________________________
+activation_1 (Activation)        (None, 20, 40, 24)    0           maxpooling2d_1[0][0]             
+____________________________________________________________________________________________________
+convolution2d_2 (Convolution2D)  (None, 20, 40, 36)    21636       activation_1[0][0]               
+____________________________________________________________________________________________________
+maxpooling2d_2 (MaxPooling2D)    (None, 10, 20, 36)    0           convolution2d_2[0][0]            
+____________________________________________________________________________________________________
+activation_2 (Activation)        (None, 10, 20, 36)    0           maxpooling2d_2[0][0]             
+____________________________________________________________________________________________________
+convolution2d_3 (Convolution2D)  (None, 10, 20, 48)    43248       activation_2[0][0]               
+____________________________________________________________________________________________________
+maxpooling2d_3 (MaxPooling2D)    (None, 5, 10, 48)     0           convolution2d_3[0][0]            
+____________________________________________________________________________________________________
+activation_3 (Activation)        (None, 5, 10, 48)     0           maxpooling2d_3[0][0]             
+____________________________________________________________________________________________________
+convolution2d_4 (Convolution2D)  (None, 3, 8, 64)      27712       activation_3[0][0]               
+____________________________________________________________________________________________________
+activation_4 (Activation)        (None, 3, 8, 64)      0           convolution2d_4[0][0]            
+____________________________________________________________________________________________________
+convolution2d_5 (Convolution2D)  (None, 1, 6, 64)      36928       activation_4[0][0]               
+____________________________________________________________________________________________________
+activation_5 (Activation)        (None, 1, 6, 64)      0           convolution2d_5[0][0]            
+____________________________________________________________________________________________________
+dropout_1 (Dropout)              (None, 1, 6, 64)      0           activation_5[0][0]               
+____________________________________________________________________________________________________
+flatten_1 (Flatten)              (None, 384)           0           dropout_1[0][0]                  
+____________________________________________________________________________________________________
+dense_1 (Dense)                  (None, 100)           38500       flatten_1[0][0]                  
+____________________________________________________________________________________________________
+activation_6 (Activation)        (None, 100)           0           dense_1[0][0]                    
+____________________________________________________________________________________________________
+dropout_2 (Dropout)              (None, 100)           0           activation_6[0][0]               
+____________________________________________________________________________________________________
+dense_2 (Dense)                  (None, 50)            5050        dropout_2[0][0]                  
+____________________________________________________________________________________________________
+activation_7 (Activation)        (None, 50)            0           dense_2[0][0]                    
+____________________________________________________________________________________________________
+dense_3 (Dense)                  (None, 10)            510         activation_7[0][0]               
+____________________________________________________________________________________________________
+activation_8 (Activation)        (None, 10)            0           dense_3[0][0]                    
+____________________________________________________________________________________________________
+dense_4 (Dense)                  (None, 1)             11          activation_8[0][0]               
+====================================================================================================
+Total params: 175,419
+Trainable params: 175,419
+Non-trainable params: 0
+____________________________________________________________________________________________________
+None
+Epoch 1/1
+I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:937] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:885] Found device 0 with properties: 
+name: GeForce GTX 1060 6GB
+major: 6 minor: 1 memoryClockRate (GHz) 1.7085
+pciBusID 0000:01:00.0
+Total memory: 5.93GiB
+Free memory: 5.58GiB
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:906] DMA: 0 
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:916] 0:   Y 
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:975] Creating TensorFlow device (/gpu:0) -> (device: 0, name: GeForce GTX 1060 6GB, pci bus id: 0000:01:00.0)
+10240/10240 [==============================] - 60s - loss: 0.1944 - val_loss: 0.0334
+Epoch 1/1
+10240/10240 [==============================] - 60s - loss: 0.1017 - val_loss: 0.0310
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0839 - val_loss: 0.0346
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0689 - val_loss: 0.0255
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0594 - val_loss: 0.0256
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0472 - val_loss: 0.0188
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0413 - val_loss: 0.0188
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0364 - val_loss: 0.0255
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0334 - val_loss: 0.0160
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0299 - val_loss: 0.0208
+
