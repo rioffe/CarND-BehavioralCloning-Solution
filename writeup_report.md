@@ -174,7 +174,7 @@ We finally create a pipeline to generate flipped, shifted, and darkened images f
 
 ![alt text][flips_shifts_and_dark]
 
-The training set generator creates images as described above from the first 90% of images in the Udacity dataset. After training for one epoch, the model weights are saved, the steering threshold is reduced by 1/10th of the value, and the training continues in such a way for 10 epochs. Training beyond 10 epochs proved unneccessary. In fact, frequntly, the very best model is obtained on the first(!) epoch, since the model learns immediately how to handle large turns.
+The training set generator creates images as described above from the first 90% of images in the Udacity dataset. After training for one epoch, the model weights are saved, the steering threshold is reduced by 1/10th of the value, and the training continues in such a way for 10 epochs. Training beyond 10 epochs proved unneccessary. In fact, frequently, the very best model is obtained on the first(!) epoch, since the model learns immediately how to handle large turns. The model is validated on the last 10% of the data set (only unmodified images from the center camera are used).
 
 ```
 Epoch 1/1
@@ -202,4 +202,4 @@ Epoch 1/1
 Here is a full [training log](./training_log.txt).
 
 The model that I provide here was so successful (in fact it was generated right after the first epoch) that it was able to complete the second track in 2 minutes 31.77 seconds with a throttle value set at 0.45! Throttle values for typical models range from 0.27 to 0.31.
-
+The remarkable fact is that only 1196 original images are used and only 398 original steering values to generate 10240 images for the first epoch, which proves enough to handle driving on the first and the second track with no issues at top speeds!
