@@ -25,7 +25,7 @@ The goals / steps of this project are the following:
 [random_shifts]: ./examples/random_shifts.png
 [sorted_steering]: ./examples/sorted_steering_values.png "Sorted Steering Values"
 [steering_values]: ./examples/steering_values.png "Steering Values over Time"
-[modified_nvidia_cnn_architecture]: ./examples/modified_nvidia_cnn_architecture.png "Steering Values over Time"
+[modified_nvidia_cnn_architecture]: ./examples/modified_nvidia_cnn_architecture.png "Modified NVidia CNN Architecture"
 
 
 ## Rubric Points
@@ -121,7 +121,7 @@ The final model architecture (model.py lines 167-209) consisted of a convolution
 
 Here is a visualization of the architecture: 
 
-![Modified NVidia CNN Architecture][[modified_nvidia_cnn_architecture]]
+![Modified NVidia CNN Architecture][modified_nvidia_cnn_architecture]
 
 ####3. Creation of the Training Set & Training Process
 
