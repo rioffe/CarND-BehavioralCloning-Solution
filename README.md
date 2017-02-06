@@ -1,5 +1,5 @@
 # CarND-BehavioralCloning-Solution
-Project 3 of the Udacity Self-Driving Car Degree: Behavioral Cloning
+Project 3 of the Udacity Self-Driving Car Degree: Behavioral Cloning (see [full report](./writeup_report.md) for details).
 
 
 This is my best model running on the first track at 0.45 throttle. I am using a modified NVidia steering model, HSV space, and only use image flips, large horizontal shifts, and brightness adjustments when generating augmented data for the model. I am training on the first track data only: actually on a very small fraction of Udacity data.  I only train for one epoch on 10240 generated images! 
