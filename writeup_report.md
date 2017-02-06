@@ -17,14 +17,15 @@ The goals / steps of this project are the following:
 
 
 [//]: # (Image References)
+[flipped]: ./examples/center_image_flipped.png "Flipped Image"
+[center]: ./examples/center_image_right_turn.png "Center Image of a Right Turn"
+[dark_samples]: ./examples/dark_samples.png "Dark Samples"
+[flips_shifts_and_dark]: ./examples/flips_shifts_and_dark.png "Flips, Shifts and Darkened Images from a Single Center Image"
+[left_right_center]: ./examples/left_center_right_samples.png "Samples of Images from Left, Center and Right Cameras"
+[random_shifts]: ./examples/random_shifts.png
+[sorted_steering]: ./examples/sorted_steering_values.png "Sorted Steering Values"
+[steering_values]: ./examples/steering_values.png "Steering Values over Time"
 
-[image1]: ./examples/placeholder.png "Model Visualization"
-[image2]: ./examples/placeholder.png "Grayscaling"
-[image3]: ./examples/placeholder_small.png "Recovery Image"
-[image4]: ./examples/placeholder_small.png "Recovery Image"
-[image5]: ./examples/placeholder_small.png "Recovery Image"
-[image6]: ./examples/placeholder_small.png "Normal Image"
-[image7]: ./examples/placeholder_small.png "Flipped Image"
 
 ## Rubric Points
 ###Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
@@ -136,27 +137,30 @@ To capture good driving behavior, I started focusing my training on images gener
 * There are 1254 center images with the absolute value of steering in the range (0.1, 0.2]
 * There are 1562 center images with the absolute value of steering in the range (0.0, 0.1]
 
+![alt text][steering_values]
+![alt text][sorted_steering]
+
 Here is an example image of center lane driving:
 
-![alt text][image2]
+![alt text][center]
 
 I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
 
-![alt text][image3]
-![alt text][image4]
-![alt text][image5]
+![alt text][left_right_center]
 
 Then I repeated this process on track two in order to get more data points.
 
 To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
 
-![alt text][image6]
-![alt text][image7]
+![alt text][flipped]
 
 Etc ....
 
 After the collection process, I had X number of data points. I then preprocessed this data by ...
 
+![alt text][random_shifts]
+![alt text][dark_samples]
+![alt text][flips_shifts_and_dark]
 
 I finally randomly shuffled the data set and put Y% of the data into a validation set. 
 
