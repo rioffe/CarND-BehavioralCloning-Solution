@@ -224,8 +224,9 @@ model1.compile(loss='mean_squared_error', optimizer=adam)
 #    the first track only. 
 # 3. We don't use the testing data set: instead we test each of the 10 produced models on two tracks and find the ones 
 #    that perform best. Note: on some occasions, the best model is produced in the first epoch (only after 1 minute of training!).
+# I select the best model out of 10 generated here
 for i in range(10):
-    model_name = 'model_dark_10K_' + str(i)
+    model_name = 'model_' + str(i)
     
     history = model1.fit_generator(random_generator(steering_threshold=(0.30 - 0.03*i)), samples_per_epoch=10240, nb_epoch=1, 
                                validation_data=generate_validation_arrays(), nb_val_samples=1024)
