@@ -80,7 +80,7 @@ The model was trained and validated on different data sets to ensure that the mo
 ####3. Model parameter tuning
 
 The model used an adam optimizer, and actually found a learning rate of 0.0001 to perform best (model.py line 215).
-Values of 0.1, 0.001, 0.00001 and 0.00003 were tried but found lacking. 
+Values of 0.1, 0.001, 0.00001 and 0.00003 were tried but found lacking. I also found the batch size of 128 to produce better results than sizes of 64 and 256.
 
 ####4. Appropriate training data
 
@@ -137,31 +137,69 @@ To capture good driving behavior, I started focusing my training on images gener
 * There are 1254 center images with the absolute value of steering in the range (0.1, 0.2]
 * There are 1562 center images with the absolute value of steering in the range (0.0, 0.1]
 
+Here is how the steering values look like over time:
+
 ![alt text][steering_values]
+
+Here is how the steering values look when sorted: 
+
 ![alt text][sorted_steering]
+
+We will first focus on training our network on images with absolute value of steering exceeding 0.3, and there are only 398 of those (well, actually 1196, if you count left and right camera images). So how do we generate 10240 images from those?
+
+
+Here are some samples from the data set where the steering is either 0, negative or positve
+
+![alt text][left_right_center]
+
+To augment the data set, I randomly took images from left, center or right camera, flipped them, darkened them, and shifted them.
 
 Here is an example image of center lane driving:
 
 ![alt text][center]
 
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
-
-![alt text][left_right_center]
-
-Then I repeated this process on track two in order to get more data points.
-
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
+Here is a flipped image of the above: 
 
 ![alt text][flipped]
 
-Etc ....
-
-After the collection process, I had X number of data points. I then preprocessed this data by ...
+Now we take the first image and apply a number of random large left and right shifts. We focus on the large shifts to enable the model to handle large left and right turns:
 
 ![alt text][random_shifts]
+
+We also create random dark images from the original by reducing the value of the V-channel of the image in HSV space:
+
 ![alt text][dark_samples]
+
+We finally create a pipeline to generate flipped, shifted, and darkened images from the original, which could be left, center or right:
+
 ![alt text][flips_shifts_and_dark]
 
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
+The training set generator creates images as described above from the first 90% of images in the Udacity dataset. After training for one epoch, the model weights are saved, the steering threshold is reduced by 1/10th of the value, and the training continues in such a way for 10 epochs. Training beyond 10 epochs proved unneccessary. In fact, frequntly, the very best model is obtained on the first(!) epoch, since the model learns immediately how to handle large turns.
 
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+```
+Epoch 1/1
+10240/10240 [==============================] - 60s - loss: 0.1944 - val_loss: 0.0334
+Epoch 1/1
+10240/10240 [==============================] - 60s - loss: 0.1017 - val_loss: 0.0310
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0839 - val_loss: 0.0346
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0689 - val_loss: 0.0255
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0594 - val_loss: 0.0256
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0472 - val_loss: 0.0188
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0413 - val_loss: 0.0188
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0364 - val_loss: 0.0255
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0334 - val_loss: 0.0160
+Epoch 1/1
+10240/10240 [==============================] - 59s - loss: 0.0299 - val_loss: 0.0208
+```
+
+Here is a full [training log](./training_log.txt).
+
+The model that I provide here was so successful (in fact it was generated right after the first epoch) that it was able to complete the second track in 2 minutes 31.77 seconds with a throttle value set at 0.45! Throttle values for typical models range from 0.27 to 0.31.
+
