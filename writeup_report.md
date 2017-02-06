@@ -25,6 +25,7 @@ The goals / steps of this project are the following:
 [random_shifts]: ./examples/random_shifts.png
 [sorted_steering]: ./examples/sorted_steering_values.png "Sorted Steering Values"
 [steering_values]: ./examples/steering_values.png "Steering Values over Time"
+[modified_nvidia_cnn_architecture]: ./examples/modified_nvidia_cnn_architecture.png "Steering Values over Time"
 
 
 ## Rubric Points
@@ -58,12 +59,12 @@ The model.py file contains the code for training and saving the convolution neur
 I use the model from the NVidia's ["End to End Learning for Self-Driving Cars" paper] (https://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf).
 The model is modified in the following ways from the orinal described in the paper:
 * The input images are 80 by 40 by 3 in HSV space instead of 200 by 66 by 3 in YUV space
-* The normalization is applied to images outside the model (we experimented with the Lambda layer, 
+* The normalization is applied to images outside the model (I experimented with the Lambda layer, 
    but found no perfomance difference)
 * The last two convolutional blocks don't have max pooling layers in them accounting for the smaller input image size.
-* Instead of a more traditional RELU activation, we use ELU activation, which we found to perform much better: 
+* Instead of a more traditional RELU activation, I use ELU activation, which I found to perform much better: 
    note, that both open-sourced Comma.AI steering model and some blogs use ELUs as well. 
-* We apply dropout only to the last of convolutional layers and the first of the fully connected layers.
+* I applied dropout only to the last of convolutional layers and the first of the fully connected layers.
 
 Here is a recap of the model (lines 167 throught 209):
 My model consists of five convolutional blocks. The first three convolutional blocks consist of sets of 5 by 5 convolutions (24, 36,
@@ -116,11 +117,11 @@ At the end of the process, the vehicle is able to drive autonomously around both
 
 ####2. Final Model Architecture
 
-The final model architecture (model.py lines 167-209) consisted of a convolution neural network with the following layers and layer sizes ...
+The final model architecture (model.py lines 167-209) consisted of a convolution neural network with the following layers and layer sizes: three 5x5 convolutions with maxpooling (24, 36, and 48 deep), followed by two 3x3 convolutions without maxpooling (due to smaller input image size), each 64 deep, flattened into 384 neuron layer followed by three fully connected layer of sizes 100, 50, and 10 and a final fully connected output layer of size 1 to control the steering. Note, that normalization happens outside the model (we experimented with Lambda layer, but found no improvement in speed).
 
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
+Here is a visualization of the architecture: 
 
-![alt text][image1]
+![Modified NVidia CNN Architecture][[modified_nvidia_cnn_architecture]]
 
 ####3. Creation of the Training Set & Training Process
 
